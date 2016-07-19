@@ -1,0 +1,92 @@
+#!/bin/bash
+
+# Change directories while storing history.
+# Access/manipulate that history.
+
+unset working_dirs[@]
+working_dirs[0]="$PWD"
+working_dirs_index=0
+
+
+goto ()
+{
+
+    # cd to directory and add to list, OR show list, OR cd to item on list by number
+
+    case "$1" in
+        [[:digit:]])
+            working_dirs_index="$1"
+            cd "${working_dirs[$working_dirs_index]}"
+            ;;
+        "")
+            local dest
+            local count=0
+            printf "\n" >&2
+            for dest in "${working_dirs[@]}"; do
+                if [ $count -eq $working_dirs_index ]; then
+                    printf "\033[34m>" >&2
+                else
+                    printf " " >&2
+                fi
+                printf " %s:%s\033[00m\n" "$count" "$dest" >&2
+                ((count++))
+            done
+            printf "\n" >&2
+            ;;
+        *)
+            cd "$1" && {
+                ((working_dirs_index++))
+                working_dirs[$working_dirs_index]="$PWD"
+            }
+            ;;
+    esac
+}
+
+
+
+back ()
+{
+
+    # change to previous directory on list
+
+    if [ $working_dirs_index -gt 0 ]; then
+        ((working_dirs_index--))
+        cd "${working_dirs[$working_dirs_index]}"
+    else
+        cd "$PWD"
+    fi
+}
+
+forward ()
+{
+
+    # change to next directory on list
+
+    if [ $((working_dirs_index + 1)) -lt "${#working_dirs[@]}" ]; then
+        ((working_dirs_index++))
+        cd "${working_dirs[$working_dirs_index]}"
+    else
+        cd "$PWD"
+    fi
+}
+
+
+
+drop ()
+{
+
+    # remove directory from list by number
+
+    case "$1" in
+        [[:digit:]])
+            unset working_dirs[$1]
+            working_dirs=( "${working_dirs[@]}" )
+            ((working_dirs_index--))
+            ;;
+        *)
+            unset working_dirs[@]
+            working_dirs[0]="$PWD"
+            working_dirs_index=0
+            ;;
+    esac
+}
