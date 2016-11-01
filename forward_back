@@ -29,6 +29,7 @@ _goto_update_list ()
         ((_goto_dir_list_index++))
         _goto_dir_list[$_goto_dir_list_index]="$PWD"
     fi
+    _goto_select_from_list "$PWD"
 }
 
 _goto_select_from_list ()
@@ -63,8 +64,8 @@ _goto_push_to_history ()
 
     _goto_dir_history[$_goto_dir_history_index]="$1"
 
-    if [ $_goto_dir_history_index -lt $(( ${#_goto_dir_history_index[@]} - 1 )) ]; then
-        _goto_dir_history=( "${_goto_dir_history[@] : 0 : $_goto_dir_history_index - 1}" )
+    if [ $_goto_dir_history_index -lt $(( ${#_goto_dir_history[@]} - 1 )) ]; then
+        _goto_dir_history=( "${_goto_dir_history[@] : 0 : $_goto_dir_history_index + 1}" )
     fi
 
 }
