@@ -2,6 +2,10 @@
 set -e
 shopt -s expand_aliases
 
+# Test file for forward back
+# expect_equal is predicate function for tests,
+# failure causes script to exit
+
 file_under_test="$PWD/forward_back"
 
 expect_equal ()
@@ -186,3 +190,6 @@ expect_equal "current history length"       $(dir_history_length)           2
 expect_equal "current list length "         $(dir_list_length)              1
 expect_equal "current history directory"    "$(current_dir_history_item)"   "$dir2"
 expect_equal "current list directory"       "$(current_dir_list_item)"      "$dir2"
+
+echo
+echo "All tests completed."
