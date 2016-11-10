@@ -129,7 +129,12 @@ _goto_goto ()
             echo
             ;;
         -)
-            _goto_back
+            if [ ${#_goto_dir_list[@]} -gt 1 ]; then
+                local back_dir="$(cd -)"
+                _goto_goto "$back_dir"
+            else
+                return
+            fi
             ;;
         *)
             if [ "$(cd "$destination"; pwd)" == "$PWD" ]; then
