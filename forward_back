@@ -5,12 +5,46 @@
 # Access/manipulate those lists
 # View those lists
 
-alias goto='    _goto_goto'
-alias drop='    _goto_drop'
-alias down='    _goto_down'
-alias up='      _goto_up'
-alias back='    _goto_back'
-alias forward=' _goto_forward'
+_goto_help ()
+{
+cat <<EOF
+
+forward_back: Change directories while storing history and unique directories in two lists.
+This file must be sourced in.
+Interact inclusively or exclusively with lists using functions below:
+
+Useage:
+
+goto            : print contents of unique list followed by history list.
+goto [dir]      : cd to dir and add to lists.
+goto [-[n]]     : equivalent to cd -; optionally, provide number of item from list.
+
+Unique List Useage:
+
+up              : traverse up in list.
+down            : traverse down in list.
+drop [n]        : drop all dirs from list; optionally, specify item number.
+
+History List Useage:
+
+back            : traverse back in list.
+forward         : traverse forward in list.
+
+EOF
+}
+
+[ "$(caller)" == "0 NULL" ] && {
+    _goto_help
+    exit 1
+}
+
+alias goto='        _goto_goto'
+alias drop='        _goto_drop'
+alias down='        _goto_down'
+alias up='          _goto_up'
+alias back='        _goto_back'
+alias forward='     _goto_forward'
+alias goto_help='   _goto_help'
 
 unset _goto_dir_list[@]
 _goto_dir_list[0]="$PWD"
