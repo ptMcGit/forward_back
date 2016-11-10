@@ -143,7 +143,7 @@ expect_equal "current list directory"       "$(current_dir_list_item)"      "$di
 
 # HISTORY COMMANDS
 
-setup "When going back"
+setup "When going back with back"
 goto "$dir2"
 goto "$dir3"
 back
@@ -151,7 +151,7 @@ back
 expect_equal "current history length"       $(dir_history_length)           3
 expect_equal "current list length "         $(dir_list_length)              3
 expect_equal "current history directory"    "$(current_dir_history_item)"   "$dir2"
-expect_equal "current list directory"       "$(current_dir_list_item)"      "$dir2"
+expect_equal "current list directory"       "$(current_dir_list_item)"      "$dir3"
 
 setup "When going forward"
 
