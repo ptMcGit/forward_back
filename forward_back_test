@@ -150,7 +150,7 @@ back
 
 expect_equal "current history length"       $(dir_history_length)           3
 expect_equal "current list length "         $(dir_list_length)              3
-expect_equal "current history directory"    "$(current_dir_history_item)"   "$dir2"
+expect_equal "current history directory"    "$(current_dir_history_item)"   "$dir3"
 expect_equal "current list directory"       "$(current_dir_list_item)"      "$dir2"
 
 setup "When going forward"

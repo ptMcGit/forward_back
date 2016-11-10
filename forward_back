@@ -183,7 +183,7 @@ _goto_back ()
     [ $_goto_dir_history_index -gt 0 ] && {
         ((_goto_dir_history_index--))
         local destination="${_goto_dir_history[$_goto_dir_history_index]}"
-        _goto_select_from_list "$destination"
+        #_goto_select_from_list "$destination"
         cd "$destination"
         return
     }
