@@ -1,6 +1,9 @@
 #!/bin/bash
 
-# Change directories while storing history.
+# Change directories while storing history and unique items from history (two lists).
+# Traverse using those lists
+# Access/manipulate those lists
+# View those lists
 
 alias goto='    _goto_goto'
 alias drop='    _goto_drop'
@@ -8,8 +11,6 @@ alias down='    _goto_down'
 alias up='      _goto_up'
 alias back='    _goto_back'
 alias forward=' _goto_forward'
-
-# Access/manipulate that history.
 
 unset _goto_dir_list[@]
 _goto_dir_list[0]="$PWD"
@@ -20,8 +21,120 @@ _goto_dir_history[0]="$PWD"
 _goto_dir_history_index=0
 _goto_dir_history_limit=20
 
-# is the destination already in the list?
+_goto_goto ()
+{
+    local destination="$1"
 
+    case "$destination" in
+        # cd to number on list
+        -[[:digit:]]*)
+            _goto_dir_list_index="${1:1}"
+            destination="${_goto_dir_list[$_goto_dir_list_index]}"
+
+            if [ "$(cd "$destination"; pwd)" == "$PWD" ]; then
+                return
+            fi
+            _goto_push_to_history "$destination"
+            cd "$destination"
+            ;;
+        # print lists
+        "")
+            echo
+            _goto_print_list
+            echo
+            _goto_print_history
+            echo
+            ;;
+        # cd -
+        -)
+            if [ ${#_goto_dir_list[@]} -gt 1 ]; then
+                local back_dir="$(cd -)"
+                _goto_goto "$back_dir"
+            else
+                return
+            fi
+            ;;
+        # cd to new directory
+        *)
+            if [ "$(cd "$destination"; pwd)" == "$PWD" ]; then
+                return
+            fi
+            cd "$destination" && {
+                _goto_update_list "$PWD"
+                _goto_push_to_history "$PWD"
+            }
+            ;;
+    esac
+}
+
+## UNIQUE LIST FUNCTIONS ##
+
+_goto_up ()
+{
+    # change to previous directory on list
+
+    local destination
+
+    if [ $_goto_dir_list_index -gt 0 ]; then
+        ((_goto_dir_list_index--))
+        destination="${_goto_dir_list[$_goto_dir_list_index]}"
+    else
+        destination="$PWD"
+    fi
+
+    cd "$destination"
+}
+
+_goto_down ()
+{
+    # change to next directory on list
+
+    local destination
+    if [ $((_goto_dir_list_index + 1)) -lt "${#_goto_dir_list[@]}" ]; then
+        ((_goto_dir_list_index++))
+        destination="${_goto_dir_list[$_goto_dir_list_index]}"
+    else
+        destination="$PWD"
+    fi
+
+    cd "$destination"
+}
+
+_goto_drop ()
+{
+    case "$1" in
+        # remove dir from list by number
+        [[:digit:]])
+            unset _goto_dir_list[$1]
+            _goto_dir_list=( "${_goto_dir_list[@]}" )
+            ((_goto_dir_list_index--))
+            ;;
+        # remove all dirs from list
+        *)
+            unset _goto_dir_list[@]
+            _goto_dir_list[0]="$PWD"
+            _goto_dir_list_index=0
+            ;;
+    esac
+}
+
+_goto_print_list ()
+{
+    local dest string count=0
+    {
+        for dest in "${_goto_dir_list[@]}"; do
+            if [ $count -eq $_goto_dir_list_index ]; then
+                printf "\033[32m%s" "*" >&2
+            else
+                printf "\033[37m%s" " " >&2
+            fi
+            printf " %s %s\n\033[00m" "$count" "$dest" >&2
+            ((count++))
+        done
+    } >&2
+}
+
+# is the destination already in the list?
 
 _goto_update_list ()
 {
@@ -54,36 +167,29 @@ _goto_check_for_uniqueness ()
     return 0
 }
 
-_goto_push_to_history ()
+## History Functions ##
+
+_goto_back ()
 {
-    ((_goto_dir_history_index++))
-    if [ $_goto_dir_history_index -gt $_goto_dir_history_limit ]; then
-        _goto_dir_history=( "${_goto_dir_history[@]:1}" )
-        ((_goto_dir_history--))
-    fi
-
-    _goto_dir_history[$_goto_dir_history_index]="$1"
-
-    if [ $_goto_dir_history_index -lt $(( ${#_goto_dir_history[@]} - 1 )) ]; then
-        _goto_dir_history=( "${_goto_dir_history[@] : 0 : $_goto_dir_history_index + 1}" )
-    fi
-
+    [ $_goto_dir_history_index -gt 0 ] && {
+        ((_goto_dir_history_index--))
+        local destination="${_goto_dir_history[$_goto_dir_history_index]}"
+        cd "$destination"
+        return
+    }
+    return 1
 }
 
-_goto_print_list ()
+_goto_forward ()
 {
-    local dest string count=0
-    {
-        for dest in "${_goto_dir_list[@]}"; do
-            if [ $count -eq $_goto_dir_list_index ]; then
-                printf "\033[32m%s" "*" >&2
-            else
-                printf "\033[37m%s" " " >&2
-            fi
-            printf " %s %s\n\033[00m" "$count" "$dest" >&2
-            ((count++))
-        done
-    } >&2
+    [ -n "${_goto_dir_history[ $((_goto_dir_history_index + 1)) ]}" ] && {
+        ((_goto_dir_history_index++))
+        local destination="${_goto_dir_history[$_goto_dir_history_index]}"
+        _goto_select_from_list "$destination"
+        cd "$destination"
+        return
+    }
+    return 1
 }
 
 _goto_print_history ()
@@ -103,126 +209,17 @@ _goto_print_history ()
 >&2
 }
 
-_goto_goto ()
+_goto_push_to_history ()
 {
-
-    # cd to directory and add to list, OR show list, OR cd to item on list by number
-
-    local destination="$1"
-
-    case "$destination" in
-        -[[:digit:]]*)
-            _goto_dir_list_index="${1:1}"
-            destination="${_goto_dir_list[$_goto_dir_list_index]}"
-
-            if [ "$(cd "$destination"; pwd)" == "$PWD" ]; then
-                return
-            fi
-            _goto_push_to_history "$destination"
-            cd "$destination"
-            ;;
-        "")
-            echo
-            _goto_print_list
-            echo
-            _goto_print_history
-            echo
-            ;;
-        -)
-            if [ ${#_goto_dir_list[@]} -gt 1 ]; then
-                local back_dir="$(cd -)"
-                _goto_goto "$back_dir"
-            else
-                return
-            fi
-            ;;
-        *)
-            if [ "$(cd "$destination"; pwd)" == "$PWD" ]; then
-                return
-            fi
-            cd "$destination" && {
-                _goto_update_list "$PWD"
-                _goto_push_to_history "$PWD"
-            }
-            ;;
-    esac
-}
-
-_goto_up ()
-{
-
-    # change to previous directory on list
-
-    local destination
-
-    if [ $_goto_dir_list_index -gt 0 ]; then
-        ((_goto_dir_list_index--))
-        destination="${_goto_dir_list[$_goto_dir_list_index]}"
-    else
-        destination="$PWD"
+    ((_goto_dir_history_index++))
+    if [ $_goto_dir_history_index -gt $_goto_dir_history_limit ]; then
+        _goto_dir_history=( "${_goto_dir_history[@]:1}" )
+        ((_goto_dir_history--))
     fi
 
-#    _goto_push_to_history "$destination"
-    cd "$destination"
-}
+    _goto_dir_history[$_goto_dir_history_index]="$1"
 
-_goto_down ()
-{
-
-    # change to next directory on list
-
-    local destination
-    if [ $((_goto_dir_list_index + 1)) -lt "${#_goto_dir_list[@]}" ]; then
-        ((_goto_dir_list_index++))
-        destination="${_goto_dir_list[$_goto_dir_list_index]}"
-    else
-        destination="$PWD"
+    if [ $_goto_dir_history_index -lt $(( ${#_goto_dir_history[@]} - 1 )) ]; then
+        _goto_dir_history=( "${_goto_dir_history[@] : 0 : $_goto_dir_history_index + 1}" )
     fi
-
-#    _goto_push_to_history "$destination"
-    cd "$destination"
-}
-
-_goto_back ()
-{
-    [ $_goto_dir_history_index -gt 0 ] && {
-        ((_goto_dir_history_index--))
-        local destination="${_goto_dir_history[$_goto_dir_history_index]}"
-        #_goto_select_from_list "$destination"
-        cd "$destination"
-        return
-    }
-    return 1
-    # change hist index
-}
-
-_goto_forward ()
-{
-    [ -n "${_goto_dir_history[ $((_goto_dir_history_index + 1)) ]}" ] && {
-        ((_goto_dir_history_index++))
-        local destination="${_goto_dir_history[$_goto_dir_history_index]}"
-        _goto_select_from_list "$destination"
-        cd "$destination"
-        return
-    }
-    return 1
-}
-
-_goto_drop ()
-{
-
-    # remove directory from list by number
-
-    case "$1" in
-        [[:digit:]])
-            unset _goto_dir_list[$1]
-            _goto_dir_list=( "${_goto_dir_list[@]}" )
-            ((_goto_dir_list_index--))
-            ;;
-        *)
-            unset _goto_dir_list[@]
-            _goto_dir_list[0]="$PWD"
-            _goto_dir_list_index=0
-            ;;
-    esac
 }
