@@ -11,6 +11,7 @@ expect_equal ()
         echo "[true]"
     else
         echo "[false]"
+        exit 1
     fi
 }
 
@@ -50,6 +51,8 @@ setup ()
     source "$file_under_test"
 }
 
+# Directories for testing
+
 prefix="$(dirname $(mktemp) )"
 
 dir1="$prefix/A"
@@ -59,116 +62,127 @@ dir4="$dir3/D"
 
 mkdir -p "$dir4"
 
+# Begin tests
+
 setup "When first sourced"
 
-expect_equal "starting history length"    $(dir_history_length)           1
-expect_equal "starting list length "      $(dir_list_length)              1
-expect_equal "current history directory"  "$(current_dir_history_item)"   "$dir1"
-expect_equal "current list directory"     "$(current_dir_list_item)"      "$dir1"
+expect_equal "starting history length"      $(dir_history_length)           1
+expect_equal "starting list length "        $(dir_list_length)              1
+expect_equal "current history directory"    "$(current_dir_history_item)"   "$dir1"
+expect_equal "current list directory"       "$(current_dir_list_item)"      "$dir1"
 
 # GOTO
 
 setup "When goto is used"
 goto "$dir2"
 
-expect_equal "starting history length"    $(dir_history_length)           2
-expect_equal "starting list length "      $(dir_list_length)              2
-expect_equal "current history directory"  "$(current_dir_history_item)"   $dir2
-expect_equal "current list directory"     "$(current_dir_list_item)"      $dir2
+expect_equal "current history length"       $(dir_history_length)           2
+expect_equal "current list length "         $(dir_list_length)              2
+expect_equal "current history directory"    "$(current_dir_history_item)"   $dir2
+expect_equal "current list directory"       "$(current_dir_list_item)"      $dir2
 
 setup "When nonexistent directory is goto'ed"
 x="$(mktemp -d)"
 rmdir "$x"
 goto "$x" 2>/dev/null
 
-expect_equal "starting history length"    $(dir_history_length)           1
-expect_equal "starting list length "      $(dir_list_length)              1
-expect_equal "current history directory"  "$(current_dir_history_item)"   "$dir1"
-expect_equal "current list directory"     "$(current_dir_list_item)"      "$dir1"
+expect_equal "current history length"       $(dir_history_length)           1
+expect_equal "current list length "         $(dir_list_length)              1
+expect_equal "current history directory"    "$(current_dir_history_item)"   "$dir1"
+expect_equal "current list directory"       "$(current_dir_list_item)"      "$dir1"
 
 setup "When using goto number"
 
 goto "$dir2"
-goto "$dir3"
 goto -0
 
-expect_equal "starting history length"    $(dir_history_length)           4
-expect_equal "starting list length "      $(dir_list_length)              3
-expect_equal "current history directory"  "$(current_dir_history_item)"   "$dir1"
-expect_equal "current list directory"     "$(current_dir_list_item)"      "$dir1"
+expect_equal "current history length"       $(dir_history_length)           3
+expect_equal "current list length "         $(dir_list_length)              2
+expect_equal "current history directory"    "$(current_dir_history_item)"   "$dir1"
+expect_equal "current list directory"       "$(current_dir_list_item)"      "$dir1"
 
 setup "When going to a place we've already been"
 
 goto "$dir2"
 goto "$dir1"
 
-expect_equal "starting history length"    $(dir_history_length)           3
-expect_equal "starting list length "      $(dir_list_length)              2
-expect_equal "current history directory"  "$(current_dir_history_item)"   "$dir1"
-expect_equal "current list directory"     "$(current_dir_list_item)"      "$dir1"
+expect_equal "current history length"       $(dir_history_length)           3
+expect_equal "current list length "         $(dir_list_length)              2
+expect_equal "current history directory"    "$(current_dir_history_item)"   "$dir1"
+expect_equal "current list directory"       "$(current_dir_list_item)"      "$dir1"
 
 setup "When going back i.e. 'cd -'"
 goto "$dir2"
 goto -
 
-expect_equal "starting history length"    $(dir_history_length)           2
-expect_equal "starting list length "      $(dir_list_length)              2
-expect_equal "current history directory"  "$(current_dir_history_item)"   "$dir1"
-expect_equal "current list directory"     "$(current_dir_list_item)"      "$dir1"
+expect_equal "current history length"       $(dir_history_length)           2
+expect_equal "current list length "         $(dir_list_length)              2
+expect_equal "current history directory"    "$(current_dir_history_item)"   "$dir1"
+expect_equal "current list directory"       "$(current_dir_list_item)"      "$dir1"
 
 # VERTICAL COMMANDS
 
 setup "When using up, history is unaffected"
 goto "$dir2"
-goto "$dir3"
-up
 up
 
-expect_equal "starting history length"    $(dir_history_length)           3
-expect_equal "starting list length "      $(dir_list_length)              3
-expect_equal "current history directory"  "$(current_dir_history_item)"   "$dir3"
-expect_equal "current list directory"     "$(current_dir_list_item)"      "$dir1"
+expect_equal "current history length"       $(dir_history_length)           2
+expect_equal "current list length "         $(dir_list_length)              2
+expect_equal "current history directory"    "$(current_dir_history_item)"   "$dir2"
+expect_equal "current list directory"       "$(current_dir_list_item)"      "$dir1"
 
 setup "When using down, history is unaffected"
 goto "$dir2"
-goto "$dir3"
 goto -0
 down
-down
 
-expect_equal "starting history length"    $(dir_history_length)           4
-expect_equal "starting list length "      $(dir_list_length)              3
-expect_equal "current history directory"  "$(current_dir_history_item)"   "$dir1"
-expect_equal "current list directory"     "$(current_dir_list_item)"      "$dir3"
+expect_equal "current history length"       $(dir_history_length)           3
+expect_equal "current list length "         $(dir_list_length)              2
+expect_equal "current history directory"    "$(current_dir_history_item)"   "$dir1"
+expect_equal "current list directory"       "$(current_dir_list_item)"      "$dir2"
 
 # HISTORY COMMANDS
 
 setup "When going back"
 goto "$dir2"
 goto "$dir3"
-goto "$dir4"
 back
-back
-goto "$dir4"
 
-expect_equal "starting history length"    $(dir_history_length)           3
-expect_equal "starting list length "      $(dir_list_length)              4
-expect_equal "current history directory"  "$(current_dir_history_item)"   "$dir4"
-expect_equal "current list directory"     "$(current_dir_list_item)"      "$dir4"
+expect_equal "current history length"       $(dir_history_length)           3
+expect_equal "current list length "         $(dir_list_length)              3
+expect_equal "current history directory"    "$(current_dir_history_item)"   "$dir2"
+expect_equal "current list directory"       "$(current_dir_list_item)"      "$dir2"
 
 setup "When going forward"
 
 goto "$dir2"
 goto "$dir3"
-goto "$dir4"
 back
-back
-back
-forward
-forward
 forward
 
-expect_equal "starting history length"    $(dir_history_length)           4
-expect_equal "starting list length "      $(dir_list_length)              4
-expect_equal "current history directory"  "$(current_dir_history_item)"   "$dir4"
-expect_equal "current list directory"     "$(current_dir_list_item)"      "$dir4"
+expect_equal "current history length"       $(dir_history_length)           3
+expect_equal "current list length "         $(dir_list_length)              3
+expect_equal "current history directory"    "$(current_dir_history_item)"   "$dir3"
+expect_equal "current list directory"       "$(current_dir_list_item)"      "$dir3"
+
+setup "When going back then going to new directory"
+
+goto "$dir2"
+goto "$dir3"
+back
+goto "$dir4"
+
+expect_equal "current history length"       $(dir_history_length)           3
+expect_equal "current list length "         $(dir_list_length)              3
+expect_equal "current history directory"    "$(current_dir_history_item)"   "$dir4"
+expect_equal "current list directory"       "$(current_dir_list_item)"      "$dir4"
+
+setup "When dropping all directories"
+
+goto "$dir2"
+drop
+
+expect_equal "current history length"       $(dir_history_length)           2
+expect_equal "current list length "         $(dir_list_length)              1
+expect_equal "current history directory"    "$(current_dir_history_item)"   "$dir2"
+expect_equal "current list directory"       "$(current_dir_list_item)"      "$dir2"
