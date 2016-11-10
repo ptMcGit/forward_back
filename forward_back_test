@@ -191,5 +191,15 @@ expect_equal "current list length "         $(dir_list_length)              1
 expect_equal "current history directory"    "$(current_dir_history_item)"   "$dir2"
 expect_equal "current list directory"       "$(current_dir_list_item)"      "$dir2"
 
+setup "When dropping a specific directory"
+
+goto "$dir2"
+drop 1
+
+expect_equal "current history length"       $(dir_history_length)           2
+expect_equal "current list length "         $(dir_list_length)              1
+expect_equal "current history directory"    "$(current_dir_history_item)"   "$dir2"
+expect_equal "current list directory"       "$(current_dir_list_item)"      "$dir1"
+
 echo
 echo "All tests completed."
