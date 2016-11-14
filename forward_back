@@ -15,20 +15,20 @@ Interact inclusively or exclusively with lists using functions below:
 
 Useage:
 
-goto            : print contents of unique list followed by history list.
-goto [dir]      : cd to dir and add to lists.
-goto [-[n]]     : equivalent to cd -; optionally, provide number of item from list.
+  goto            : print contents of unique list followed by history list.
+  goto [dir]      : cd to dir and add to lists.
+  goto [-[n]]     : equivalent to cd -; optionally, provide number of item from list.
 
 Unique List Useage:
 
-up              : traverse up in list.
-down            : traverse down in list.
-drop [n]        : drop all dirs from list; optionally, specify item number.
+  up              : traverse up in list.
+  down            : traverse down in list.
+  drop [n]        : drop all dirs from list; optionally, specify item number.
 
 History List Useage:
 
-back            : traverse back in list.
-forward         : traverse forward in list.
+  back            : traverse back in list.
+  forward         : traverse forward in list.
 
 EOF
 }
