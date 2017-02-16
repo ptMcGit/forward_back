@@ -1,0 +1,16 @@
+
+- finish tests:
+  - `drop n`
+- clarify semantics e.g. 'unique list'
+- reorder any code
+- init function for globals
+
+- If you want colored output in two columns with pr? see `goto | cat -e`
+  Notes:
+  - counts escape sequences as characters
+  - lines are very short
+  - a truncated line often removes closing escape sequence
+  Solutions:
+  - manually truncate line and end with closing escape sequence
+  - color 1 line (offset whichever)
+  - separate printing functions
