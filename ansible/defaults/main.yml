@@ -1,0 +1,6 @@
+---
+bash_profile_file: /etc/profile
+
+package_directory_root: /usr/local/
+package_directory: "{{ package_directory_root }}/stuff/"
+project_directory: "{{ package_directory }}/forward_back/"
