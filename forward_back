@@ -77,11 +77,11 @@ _goto_goto ()
             ;;
         # print lists
         "")
-            echo
+            printf '\e\n'
             _goto_print_list
-            echo
+            printf '\e\n'
             _goto_print_history
-            echo
+            printf '\e\n'
             ;;
         # cd -
         -)
