@@ -6,6 +6,35 @@
 # View those lists
 
 _GOTO_UPDATE_HISTORY=
+_GOTO_IGNORE_CMDS=true
+
+_ignore_cmds ()
+{
+    local cmds=(
+        'back'
+        'down'
+        'drop'
+        'forward'
+        'goto'
+        'goto_help'
+        'up'
+    )
+
+    local dup_switch=
+
+    for i in "${cmds[@]}"; do
+        dup_switch=
+        while read -r -d: ; do
+            echo "$i" "$REPLY"
+            if [ "$i" == "$REPLY" ]; then
+                dup_switch=true
+                break
+            fi
+        done <<< "$HISTIGNORE"
+        [ -z "$dup_switch" ] &&
+            HISTIGNORE="$HISTIGNORE${HISTIGNORE:+:}$i"
+    done
+}
 
 _goto_help ()
 {
@@ -56,6 +85,8 @@ unset _goto_dir_history[@]
 _goto_dir_history[0]="$PWD"
 _goto_dir_history_index=0
 _goto_dir_history_limit=20
+
+[ -n "$_GOTO_IGNORE_CMDS" ] && _ignore_cmds
 
 _goto_goto ()
 {

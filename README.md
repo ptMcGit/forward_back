@@ -56,6 +56,8 @@ Aliases are very easily modified to suit a user's needs.
 
 Set `_GOTO_UPDATE_HISTORY` to a non-empty string to cause list commands to update history.
 
+Set `_GOTO_IGNORE_CMDS` to an empty string to cause `forward_back` commands to be saved in bash command history.
+
 ## Tests ##
 
 - Creates some temporary directories to perform tests.
