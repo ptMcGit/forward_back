@@ -92,6 +92,8 @@ _goto_goto ()
 {
     local destination="$1"
 
+    destination="${destination/#\~/$HOME}"
+
     case "$destination" in
         # cd to number on list
         -[[:digit:]]*)
