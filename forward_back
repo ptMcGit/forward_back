@@ -5,6 +5,8 @@
 # Access/manipulate those lists
 # View those lists
 
+_GOTO_UPDATE_HISTORY=
+
 _goto_help ()
 {
 cat <<EOF
@@ -63,11 +65,13 @@ _goto_goto ()
         # cd to number on list
         -[[:digit:]]*)
             _goto_dir_list_index="${1:1}"
+            local _goto_dir_prev_list_index=$_goto_dir_list_index
             destination="${_goto_dir_list[$_goto_dir_list_index]}"
 
             if [ "$(cd "$destination"; pwd)" == "$PWD" ]; then
                 return
             fi
+            _goto_dir_list_index=$_goto_dir_prev_list_index
             _goto_push_to_history "$destination"
             cd "$destination"
             ;;
@@ -78,6 +82,7 @@ _goto_goto ()
             echo
             _goto_print_history
             echo
+            echo $_goto_dir_list_index
             ;;
         # cd -
         -)
@@ -116,20 +121,26 @@ _goto_up ()
         destination="$PWD"
     fi
 
+    _goto_update_history_by_match
+
     cd "$destination"
 }
 
 _goto_down ()
 {
     # change to next directory on list
-
+    echo "down $_goto_dir_list_index"
     local destination
     if [ $((_goto_dir_list_index + 1)) -lt "${#_goto_dir_list[@]}" ]; then
+        echo "go down"
         ((_goto_dir_list_index++))
         destination="${_goto_dir_list[$_goto_dir_list_index]}"
     else
+        echo "don't go down"
         destination="$PWD"
     fi
+
+    _goto_update_history_by_match
 
     cd "$destination"
 }
@@ -157,7 +168,7 @@ _goto_print_list ()
     local dest string count=0
     {
         for dest in "${_goto_dir_list[@]}"; do
-            if [ $count -eq $_goto_dir_list_index ]; then
+            if [ "$dest" == "$PWD" ]; then
                 printf "\033[32m%s" "*" >&2
             else
                 printf "\033[37m%s" " " >&2
@@ -201,6 +212,20 @@ _goto_check_for_uniqueness ()
     return 0
 }
 
+_goto_update_list_by_match ()
+{
+    local count=0
+    local dest
+    for dest in "${_goto_dir_list[@]}"; do
+        _goto_dir_list_index=$count
+        if [ "$dest" == "$PWD" ]; then
+            return
+        fi
+        ((count++))
+    done
+}
+
+
 ## History Functions ##
 
 _goto_back ()
@@ -209,6 +234,7 @@ _goto_back ()
         ((_goto_dir_history_index--))
         local destination="${_goto_dir_history[$_goto_dir_history_index]}"
         cd "$destination"
+        _goto_update_list_by_match
         return
     }
     return 1
@@ -221,6 +247,7 @@ _goto_forward ()
         local destination="${_goto_dir_history[$_goto_dir_history_index]}"
         _goto_select_from_list "$destination"
         cd "$destination"
+        _goto_update_list_by_match
         return
     }
     return 1
@@ -256,4 +283,19 @@ _goto_push_to_history ()
     if [ $_goto_dir_history_index -lt $(( ${#_goto_dir_history[@]} - 1 )) ]; then
         _goto_dir_history=( "${_goto_dir_history[@] : 0 : $_goto_dir_history_index + 1}" )
     fi
+}
+
+_goto_update_history_by_match ()
+{
+    [ -z "$_GOTO_UPDATE_HISTORY" ] && return
+    local count=0
+    local dest
+
+    for dest in "${_goto_dir_history[@]}"; do
+        _goto_dir_history_index=$count
+        if [ "$dest" == "$PWD" ]; then
+            return
+        fi
+        ((count++))
+    done
 }

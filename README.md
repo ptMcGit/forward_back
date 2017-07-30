@@ -19,6 +19,8 @@ When traversing with commands specific to a list, that list is modified e.g. his
 
 #### `goto` ####
 
+Source `forward_back` into your environment.
+
 This command affects both directory lists.
 
 `goto`    - show list of indexed directories
@@ -51,6 +53,8 @@ These commands only affect the history list.
 
 If you have identifier conflicts see the top of the file.
 Aliases are very easily modified to suit a user's needs.
+
+Set `_GOTO_UPDATE_HISTORY` to a non-empty string to cause list commands to update history.
 
 ## Tests ##
 
