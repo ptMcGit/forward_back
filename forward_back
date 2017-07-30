@@ -82,7 +82,6 @@ _goto_goto ()
             echo
             _goto_print_history
             echo
-            echo $_goto_dir_list_index
             ;;
         # cd -
         -)
@@ -129,14 +128,11 @@ _goto_up ()
 _goto_down ()
 {
     # change to next directory on list
-    echo "down $_goto_dir_list_index"
     local destination
     if [ $((_goto_dir_list_index + 1)) -lt "${#_goto_dir_list[@]}" ]; then
-        echo "go down"
         ((_goto_dir_list_index++))
         destination="${_goto_dir_list[$_goto_dir_list_index]}"
     else
-        echo "don't go down"
         destination="$PWD"
     fi
 
