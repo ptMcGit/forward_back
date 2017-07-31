@@ -25,7 +25,6 @@ _ignore_cmds ()
     for i in "${cmds[@]}"; do
         dup_switch=
         while read -r -d: ; do
-            echo "$i" "$REPLY"
             if [ "$i" == "$REPLY" ]; then
                 dup_switch=true
                 break
