@@ -9,8 +9,5 @@
     - name: Add line in profile to source forward_back.
       lineinfile:
         dest: "{{ bash_profile_file }}"
-        line: |
-
-          source {{ project_directory }}/forward_back
-
+        line: source {{ project_directory }}/forward_back
       become: yes
