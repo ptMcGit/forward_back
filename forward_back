@@ -97,13 +97,11 @@ _goto_goto ()
         # cd to number on list
         -[[:digit:]]*)
             _goto_dir_list_index="${1:1}"
-            local _goto_dir_prev_list_index=$_goto_dir_list_index
             destination="${_goto_dir_list[$_goto_dir_list_index]}"
 
             if [ "$(cd "$destination"; pwd)" == "$PWD" ]; then
                 return
             fi
-            _goto_dir_list_index=$_goto_dir_prev_list_index
             _goto_push_to_history "$destination"
             cd "$destination"
             ;;
@@ -115,16 +113,7 @@ _goto_goto ()
             _goto_print_history
             printf '\e\n'
             ;;
-        # cd -
-        -)
-            if [ ${#_goto_dir_list[@]} -gt 1 ]; then
-                local back_dir="$(cd -)"
-                _goto_goto "$back_dir"
-            else
-                return
-            fi
-            ;;
-        # cd to new directory
+        # cd to new directory or current directory
         *)
             if [ "$(cd "$destination"; pwd)" == "$PWD" ]; then
                 return
@@ -211,8 +200,8 @@ _goto_print_list ()
 
 _goto_update_list ()
 {
-    if $(_goto_check_for_uniqueness "$1"); then
-        ((_goto_dir_list_index++))
+    if $(_goto_file_is_unique "$1"); then
+	_goto_dir_list_index="${#_goto_dir_list[@]}"
         _goto_dir_list[$_goto_dir_list_index]="$PWD"
     fi
     _goto_select_from_list "$PWD"
@@ -230,7 +219,7 @@ _goto_select_from_list ()
     done
 }
 
-_goto_check_for_uniqueness ()
+_goto_file_is_unique ()
 {
     local dest
     for dest in "${_goto_dir_list[@]}"; do
@@ -300,6 +289,11 @@ _goto_print_history ()
 
 _goto_push_to_history ()
 {
+    if [ "${_goto_dir_history[$_goto_dir_history_index]}" == "$PWD" ] && \
+        [ "${_goto_dir_history_index}" -eq "$(( ${#_goto_dir_history[@]} - 1))" ]; then
+        return
+    fi
+
     ((_goto_dir_history_index++))
     if [ $_goto_dir_history_index -gt $_goto_dir_history_limit ]; then
         _goto_dir_history=( "${_goto_dir_history[@]:1}" )
