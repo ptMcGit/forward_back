@@ -23,13 +23,14 @@ _ignore_cmds ()
     local dup_switch=
 
     for i in "${cmds[@]}"; do
+        i+='*'
         dup_switch=
         while read -r -d: ; do
             if [ "$i" == "$REPLY" ]; then
                 dup_switch=true
                 break
             fi
-        done <<< "$HISTIGNORE"
+        done <<< "$HISTIGNORE:"
         [ -z "$dup_switch" ] &&
             HISTIGNORE="$HISTIGNORE${HISTIGNORE:+:}$i"
     done
