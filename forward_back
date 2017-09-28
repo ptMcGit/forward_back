@@ -93,13 +93,11 @@ _goto_goto ()
     local destination="$1"
 
     destination="${destination/#\~/$HOME}"
-
     case "$destination" in
         # cd to number on list
         -[[:digit:]]*)
             _goto_dir_list_index="${1:1}"
             destination="${_goto_dir_list[$_goto_dir_list_index]}"
-
             if [ "$(cd "$destination"; pwd)" == "$PWD" ]; then
                 return
             fi
@@ -116,9 +114,6 @@ _goto_goto ()
             ;;
         # cd to new directory or current directory
         *)
-            if [ "$(cd "$destination"; pwd)" == "$PWD" ]; then
-                return
-            fi
             cd "$destination" && {
                 _goto_update_list "$PWD"
                 _goto_push_to_history "$PWD"
