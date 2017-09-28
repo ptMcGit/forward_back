@@ -136,9 +136,7 @@ _goto_up ()
     else
         destination="$PWD"
     fi
-
-    _goto_update_history_by_match
-
+    
     cd "$destination"
 }
 
@@ -152,8 +150,6 @@ _goto_down ()
     else
         destination="$PWD"
     fi
-
-    _goto_update_history_by_match
 
     cd "$destination"
 }
@@ -303,17 +299,3 @@ _goto_push_to_history ()
     fi
 }
 
-_goto_update_history_by_match ()
-{
-    [ -z "$_GOTO_UPDATE_HISTORY" ] && return
-    local count=0
-    local dest
-
-    for dest in "${_goto_dir_history[@]}"; do
-        _goto_dir_history_index=$count
-        if [ "$dest" == "$PWD" ]; then
-            return
-        fi
-        ((count++))
-    done
-}
